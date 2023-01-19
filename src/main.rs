@@ -2,6 +2,7 @@
 extern crate rocket;
 
 use rocket::serde::json::Json;
+use serde::{Deserialize, Serialize};
 
 struct Response<T> {
     success: bool,
@@ -9,6 +10,7 @@ struct Response<T> {
     data: T,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
 struct User {
     id: i32,
     username: String,
@@ -19,13 +21,14 @@ fn index() -> &'static str {
     return "tomheaton";
 }
 
-/*#[get("/user", format = "json")]
-fn user() -> User {
-    return User {
+#[get("/user")]
+fn user() -> Json<User> {
+    let user = User {
         id: 1,
         username: "tomheaton".to_string(),
     };
-}*/
+    return Json(user);
+}
 
 #[get("/")]
 fn world() -> &'static str {
@@ -33,8 +36,7 @@ fn world() -> &'static str {
 }
 
 #[get("/<name>")]
-// fn hello(name: &str) -> String {
-fn hello(name: &str) -> Json<String> {
+fn hello(name: &str) -> String {
     return format!("Hello, {}!", name);
 }
 
@@ -42,8 +44,7 @@ fn hello(name: &str) -> Json<String> {
 #[rocket::main]
 async fn main() -> Result<(), rocket::Error> {
     let _rocket = rocket::build()
-        // .mount("/", routes![index, user])
-        .mount("/", routes![index])
+        .mount("/", routes![index, user])
         .mount("/hello", routes![hello, world])
         .launch()
         .await?;
